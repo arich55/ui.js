@@ -37,8 +37,14 @@ function ui()
 
 		if(!ui.inActionList(this)){
 			$('body').on(this.action,this.selector,function(e){
-				e.preventDefault();
+				// @TODO modifiy to support checkboxes.
 				ui.currentElem = $(this);
+				elementType = ui.currentElem.prop('tagName');
+				buttonType = ui.currentElem.attr('type');
+
+				if(typeof buttonType != "undefined" ) buttonType = buttonType.toLowerCase();
+				if(elementType == 'A' || elementType =="BUTTON" || buttonType == 'submit') e.preventDefault(); // stop a tags from being stupid.
+				
 				var data = window[callback](uiArguments);	
 				ui.respond(selector,data);
 
@@ -69,6 +75,7 @@ function ui()
 		elem = this.responderList[selector];
 		if(selector != null && elem != null && data != null)
 		{
+			elem = $(elem.selector);
 			// check the data type and handle.
 			if(data.type == 'update') elem.html(data.content);
 
@@ -125,7 +132,11 @@ function ui()
 	{
 		var form = $(id);
 		var url = form.attr('action');
-		return new ui.request(url,form.serialize());
+		var result = new ui.request(url,form.serialize());
+		// clear the form inputs.
+		form.find('input:text').val('');
+		form.find('input:first').focus();
+		return result;
 	}
 
 	ui.prototype.showDebug = function()
